@@ -14,6 +14,8 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = ['product_title', 'product_count', 'product_price', 'product_created_at']
     search_fields = ['product_title', 'product_category']
     list_filter = ['product_created_at']
+    save_as = True
+    save_on_top = True
 
 @admin.register(CartModel)
 class CartModelAdmin(admin.ModelAdmin):
