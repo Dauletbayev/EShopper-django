@@ -21,7 +21,7 @@ from django.urls import path
 from django.conf.urls.static import static
 from django.conf import settings
 
-from products.views import (HomePage, main_page, shop_page, detail_page, cart_page, contact_page,
+from products.views import (HomePage, main_page, ShopPage, detail_page, cart_page, contact_page,
                             logout_view, MyLoginView, search, category_page, user_cart, add_products_to_user_cart,
                             delete_user_cart, RegisterUser)
 
@@ -29,7 +29,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', HomePage.as_view(), name='home'),
     path('index', main_page, name='index'),
-    path('shop', shop_page, name='shop'),
+    path('shop', ShopPage.as_view(), name='shop'),
     path('detail/<int:pk>', detail_page, name='detail'),
     path('cart', cart_page, name='cart'),
     path('contact', contact_page, name='contact'),

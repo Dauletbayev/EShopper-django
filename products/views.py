@@ -29,16 +29,24 @@ def main_page(request):
     context = {'categories': categories, 'products': products}
     return render(request, template_name='index.html', context=context)
 
-def shop_page(request):
-    categories = CategoryModel.objects.all()
-    products = ProductModel.objects.all()
-    context = {'categories': categories, 'products': products}
-    return render(request, template_name='shop.html', context=context)
+class ShopPage(ListView):
+    template_name = 'shop.html'
+    context_object_name = 'products'
+    paginate_by = 6
+
+    def get_queryset(self):
+        return ProductModel.objects.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['categories'] = CategoryModel.objects.all()
+        return context
 
 def detail_page(request, pk):
     categories = CategoryModel.objects.all()
     product = ProductModel.objects.get(id=pk)
-    context = {'product': product, 'categories': categories}
+    products = ProductModel.objects.all()
+    context = {'product': product, 'categories': categories, 'products': products}
     return render(request, template_name='detail.html', context=context)
 
 def cart_page(request):
