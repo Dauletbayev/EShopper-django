@@ -125,6 +125,8 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR / 'assets',),)
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+AUTH_USER_MODEL = 'products.User'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 

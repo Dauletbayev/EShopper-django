@@ -1,5 +1,6 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser, UserManager, Group, Permission
+
 
 # Create your models here.
 
@@ -30,12 +31,26 @@ class ProductModel(models.Model):
     class Meta:
         verbose_name = 'Product'
         verbose_name_plural = 'Products'
+class User(AbstractUser):
+    phone_number = models.CharField(max_length=13, unique=True)
+    GENDERS = (
+        ('Male', 'Male'),
+        ('Female', 'Female'),
+        ('None', 'None'),
+    )
+    user_gender = models.CharField(max_length=7, choices=GENDERS, default='None')
+    groups = models.ManyToManyField(Group, related_name='custom_user_set')
+    user_permissions = models.ManyToManyField(Permission, related_name='custom_user_set')
+
+    objects = UserManager()
 
 class CartModel(models.Model):
     user_id = models.IntegerField()
+    user_name = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
     user_product = models.ForeignKey(ProductModel, on_delete=models.CASCADE)
     user_product_count = models.IntegerField()
     user_add_date = models.DateTimeField(auto_now_add=True)
+    total_price = models.FloatField()
 
     def __str__(self):
         return str(self.user_id)
@@ -43,3 +58,4 @@ class CartModel(models.Model):
     class Meta:
         verbose_name = 'User cart'
         verbose_name_plural = 'User carts'
+

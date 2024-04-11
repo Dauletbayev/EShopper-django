@@ -1,7 +1,6 @@
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
-from products.handler import bot
 from django.contrib.auth import logout
 from django.contrib.auth.views import LoginView
 from django.shortcuts import render, redirect
@@ -9,6 +8,8 @@ from django.views.generic.list import ListView
 
 from products.models import CategoryModel, ProductModel, CartModel
 from products.forms import SearchForm
+from products.handler import bot
+from products.forms import CustomUserCreationForm
 
 
 class HomePage(ListView):
@@ -35,7 +36,17 @@ class ShopPage(ListView):
     paginate_by = 6
 
     def get_queryset(self):
-        return ProductModel.objects.all()
+
+        data = ProductModel.objects.all()
+
+        sort_by = self.request.GET.get('sort_by')
+        if sort_by:
+            if sort_by == 'latest':
+                data = data.order_by('-product_created_at')
+            elif sort_by == 'earliest':
+                data = data.order_by('product_created_at')
+
+        return data
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -55,17 +66,9 @@ def cart_page(request):
     context = {'categories': categories, 'products': products}
     return render(request, template_name='cart.html', context=context)
 
-def checkout_page(request):
-    categories = CategoryModel.objects.all()
-    products = ProductModel.objects.all()
-    context = {'categories': categories, 'products': products}
-    return render(request, template_name='checkout.html', context=context)
-
 def contact_page(request):
     categories = CategoryModel.objects.all()
-    products = ProductModel.objects.all()
-    context = {'categories': categories, 'products': products}
-    return render(request, template_name='contact.html', context=context)
+    return render(request, template_name='contact.html', context={'categories': categories})
 
 def category_page(request, pk):
     categories = CategoryModel.objects.all()
@@ -94,35 +97,34 @@ def search(request):
         except:
             return redirect('/')
 
-def sort_view(request):
-    data = ProductModel.objects.all()
-
-    sort_by = request.GET.get('sort_by')
-    if sort_by:
-        if sort_by == 'Latest':
-            data = data.order_by('-product_created_at')
-        elif sort_by == 'Earliest':
-            data = data.order_by('product_created_at')
-
-    return render(request, 'shop.html', {'data': data})
-
 
 def add_products_to_user_cart(request, pk):
     if request.method == 'POST':
         checker = ProductModel.objects.get(pk=pk)
+        requested_count = int(request.POST.get('pr_count'))
 
-        if checker.product_count >= int(request.POST.get('pr_count')):
-            CartModel.objects.create(user_id=request.user.id,
-                                     user_product=checker,
-                                     user_product_count=int(request.POST.get('pr_count'))
-                                     ).save()
+        if checker.product_count >= requested_count:
+            total_price = checker.product_price * requested_count
+
+            cart_item = CartModel.objects.create(
+                user_id=request.user.id,
+                user_product=checker,
+                user_product_count=requested_count,
+                total_price=total_price
+            )
+
             print('Success')
-            return redirect('cart')
+            return redirect('shop')
         else:
             return redirect('/')
 
+
 def user_cart(request):
+    products = ProductModel.objects.all()
+    categories = CategoryModel.objects.all()
     cart = CartModel.objects.filter(user_id=request.user.id)
+    cart2 = CartModel.objects.filter(user_name=request.user)
+    print(str(cart2))
     if request.method == 'POST':
         main_text = 'Новый заказ\n'
         for i in cart:
@@ -134,7 +136,8 @@ def user_cart(request):
             cart.delete()
             return redirect('/')
     else:
-        return render(request, template_name='cart.html', context={'cart': cart})
+        return render(request, template_name='cart.html', context={'cart': cart, 'products': products,
+                                                                   'categories': categories})
 
 def delete_user_cart(request, pk):
     product_delete = ProductModel.objects.get(pk=pk)
@@ -144,17 +147,6 @@ def delete_user_cart(request, pk):
     return redirect('/user_cart')
 
 class RegisterUser(CreateView):
-    form_class = UserCreationForm
+    form_class = CustomUserCreationForm  # Use the custom user creation form
     template_name = 'register.html'
     success_url = reverse_lazy('login')
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        user_context = self.get_user_context(title='Registration')
-        context.update(user_context)
-        return context
-
-    def get_user_context(self, **kwargs):
-        return {
-            'title': kwargs.get('title', 'Registration')
-        }

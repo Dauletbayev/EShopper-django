@@ -66,6 +66,19 @@
                     <h1 class="m-0 display-5 font-weight-semi-bold"><span class="text-primary font-weight-bold border px-3 mr-1">E</span>Shopper</h1>
                 </a>
             </div>
+            <div class="col-lg-6 col-6 text-left">
+                <form action="search" method="post">
+                    <div class="input-group">
+                        {% csrf_token %}
+                        <input type="text" class="form-control" placeholder="Search for products" name="search_product">
+                        <div class="input-group-append">
+                            <span class="input-group-text bg-transparent text-primary">
+                                <button class="fa fa-search" type="submit"></button>
+                            </span>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
     <!-- Topbar End -->
@@ -149,10 +162,11 @@
                     <tbody class="align-middle">
                         {% for i in cart %}
                             <tr>
-                                <td class="align-middle"><img src="{{ i.user_product.product_image.url }}" alt="" style="width: 50px;"> Colorful Stylish Shirt</td>
+                                <td class="align-middle"><img src="{{ i.user_product.product_image.url }}" alt="" style="width: 50px;">
+                                    {{ i.user_product.product_title }}</td>
                                 <td class="align-middle">${{ i.user_product.product_price }}</td>
                                 <td class="align-middle">{{ i.user_product_count }}</td>
-                                <td class="align-middle">${{ i.user_product.product_price }}</td>
+                                <td class="align-middle">${{ i.total_price }}</td>
                                 <td class="align-middle"><a href="/delete_user_cart/{{ i.user_product.pk }}">Delete</a></td>
                             </tr>
                         {% endfor %}
@@ -175,7 +189,7 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between mb-3 pt-1">
                             <h6 class="font-weight-medium">Total</h6>
-                            <h6 class="font-weight-medium">${{ i.user_product.product_price }}</h6>
+                            <h6 class="font-weight-medium">$</h6>
                         </div>
                         <form method="post" style="text-align: center">
                             {% csrf_token %}
@@ -187,6 +201,38 @@
         </div>
     </div>
     <!-- Cart End -->
+
+
+    <!-- Products Start -->
+    <div class="container-fluid pt-5">
+        <div class="text-center mb-4">
+            <h2 class="section-title px-5"><span class="px-2">You may also like</span></h2>
+        </div>
+        <div class="row px-xl-5 pb-3">
+            {% for product in products|slice:4 %}
+                <div class="col-lg-3 col-md-6 col-sm-12 pb-1">
+                    <div class="card product-item border-0 mb-4">
+                        <div class="card-header product-img position-relative overflow-hidden bg-transparent border p-0">
+                            <img class="img-fluid w-100" src="{{ product.product_image.url }}" alt="" style="height: 300px">
+                        </div>
+                        <div class="card-body border-left border-right text-center p-0 pt-4 pb-3">
+                            <h6 class="text-truncate mb-3">{{ product.product_title }}</h6>
+                            <div class="d-flex justify-content-center">
+                                <h6>${{ product.product_price }}</h6>
+                            </div>
+                        </div>
+                        <div class="card-footer d-flex justify-content-between bg-light border">
+                            <a href="/detail/{{ product.id }}" class="btn btn-sm text-dark p-0"><i class="fas fa-eye text-primary mr-1"></i>View Detail</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div style="text-align: center">
+            <a href="/shop"><button class="btn btn-primary px-4">See More</button></a>
+        </div>
+    </div>
+    <!-- Products End -->
 
 
     <!-- Footer Start -->

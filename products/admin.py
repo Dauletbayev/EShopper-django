@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models import CategoryModel, ProductModel, CartModel
+from django.contrib.auth.admin import UserAdmin
+
+from .models import CategoryModel, ProductModel, CartModel, User
 
 # Register your models here.
 
@@ -22,3 +24,15 @@ class CartModelAdmin(admin.ModelAdmin):
     list_display = ['user_id', 'user_add_date']
     search_fields = ['user_id']
     list_filter = ['user_add_date']
+
+class CustomUserAdmin(UserAdmin):
+    model = User
+    fieldsets = (
+        (None, {'fields': ('username', 'phone_number', 'user_gender',)}),
+    )
+    add_fieldsets = UserAdmin.add_fieldsets + (
+        (None, {'fields': ('phone_number', 'user_gender',)}),
+    )
+    list_display = ['username', 'phone_number', 'user_gender', 'is_active',]
+
+admin.site.register(User, CustomUserAdmin)
